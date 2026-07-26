@@ -42,9 +42,9 @@ crontab -e
 
 Add this line to run daily at 3:00 AM:
 
-```
+```bash
 0 3 * * * cd /root/kaeferyeager/sni-ip-sync && ./sni-ip-sync >> /var/log/sni-ip-sync.log 2>&1
-
+```
 ### 5. Verify cron is running
 
 ```bash
