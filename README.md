@@ -25,7 +25,8 @@ source ~/.profile
 cd /root
 git clone https://github.com/YOUR_USERNAME/kaeferyeager-sni-ip-sync.git
 cd sni-ip-sync
-go build -o sni-ip-sync .
+go build -o sni-ip-sync sync.go
+go build -o extract extract.go
 ```
 
 ### 3. Test manually
@@ -56,4 +57,26 @@ crontab -l
 ```bash
 cd /root/kaeferyeager/sni-ip-sync
 ./sni-ip-sync
+```
+
+## Extract domains
+
+The `extract` tool pulls unique subdomains for a given domain from `final.txt`.
+
+### Usage
+
+```bash
+# Extract domains for a specific domain (reads from default path)
+./extract example.com
+
+# Extract with custom input file
+./extract -f /path/to/final.txt example.com
+```
+
+### Output
+
+Files are saved in the current directory with the format:
+
+```
+x_example.com_2026-07-26_143052.txt
 ```
