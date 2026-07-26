@@ -19,18 +19,21 @@ func main() {
 
 	input := defaultInput
 	args := os.Args[1:]
+	var domain string
 
-	if len(args) >= 2 && args[0] == "-f" {
-		input = args[1]
-		args = args[2:]
+	for i := 0; i < len(args); i++ {
+		if args[i] == "-f" && i+1 < len(args) {
+			input = args[i+1]
+			i++
+		} else if domain == "" {
+			domain = args[i]
+		}
 	}
 
-	if len(args) < 1 {
+	if domain == "" {
 		fmt.Fprintln(os.Stderr, "Usage: extract [-f file] <domain>")
 		os.Exit(1)
 	}
-
-	domain := args[0]
 
 	f, err := os.Open(input)
 	if err != nil {
