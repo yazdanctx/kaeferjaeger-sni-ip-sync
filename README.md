@@ -14,7 +14,7 @@ Go script that syncs SNI IP range data from [kaeferjaeger.gay](https://kaeferjae
 
 ```bash
 wget https://go.dev/dl/go1.24.2.linux-amd64.tar.gz
-sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.24.2.linux-amd64.tar.gz
+rm -rf /usr/local/go && tar -C /usr/local -xzf go1.24.2.linux-amd64.tar.gz
 echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
 source ~/.profile
 ```
@@ -22,7 +22,7 @@ source ~/.profile
 ### 2. Clone and build
 
 ```bash
-cd ~/kaeferyeager
+cd /root
 git clone https://github.com/YOUR_USERNAME/kaeferyeager-sni-ip-sync.git
 cd sni-ip-sync
 go build -o sni-ip-sync .
@@ -43,10 +43,7 @@ crontab -e
 Add this line to run daily at 3:00 AM:
 
 ```
-0 3 * * * cd /home/YOUR_USER/kaeferyeager/sni-ip-sync && ./sni-ip-sync >> /var/log/sni-ip-sync.log 2>&1
-```
-
-Replace `YOUR_USER` with your actual Linux username.
+0 3 * * * cd /root/kaeferyeager/sni-ip-sync && ./sni-ip-sync >> /var/log/sni-ip-sync.log 2>&1
 
 ### 5. Verify cron is running
 
@@ -57,6 +54,6 @@ crontab -l
 ## Manual run
 
 ```bash
-cd ~/kaeferyeager/sni-ip-sync
+cd /root/kaeferyeager/sni-ip-sync
 ./sni-ip-sync
 ```
