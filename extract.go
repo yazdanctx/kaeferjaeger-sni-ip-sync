@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -35,15 +37,56 @@ func main() {
 		os.Exit(1)
 	}
 
-	f, err := os.Open(input)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
-	}
-	defer f.Close()
-
 	seen := make(map[string]bool)
 	var results []string
+
+	add := func(s string) {
+		s = strings.TrimSpace(s)
+		if s == "" {
+			return
+		}
+		if !seen[s] {
+			seen[s] = true
+			results = append(results, s)
+		}
+	}
+
+	// --- Pass 1: Go parser on the input file ---
+	if err := parseFile(input, domain, add); err != nil {
+		fmt.Fprintf(os.Stderr, "Warning: parse error: %v\n", err)
+	}
+
+	// --- Pass 2: bash pipeline on *.txt in the same directory ---
+	dir := filepath.Dir(input)
+	if err := runPipeline(dir, domain, add); err != nil {
+		fmt.Fprintf(os.Stderr, "Warning: pipeline error: %v\n", err)
+	}
+
+	sort.Strings(results)
+
+	outname := fmt.Sprintf("x_%s_%s.txt", domain, time.Now().Format("2006-01-02_150405"))
+	out, err := os.Create(outname)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error creating output: %v\n", err)
+		os.Exit(1)
+	}
+	defer out.Close()
+
+	w := bufio.NewWriter(out)
+	for _, r := range results {
+		fmt.Fprintln(w, r)
+	}
+	w.Flush()
+
+	fmt.Printf("Extracted %d unique domains -> %s\n", len(results), outname)
+}
+
+func parseFile(path, domain string, add func(string)) error {
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
@@ -65,35 +108,40 @@ func main() {
 			if sni == "" || !strings.Contains(sni, domain) {
 				continue
 			}
-			if !seen[sni] {
-				seen[sni] = true
-				results = append(results, sni)
-			}
+			add(sni)
 		}
 	}
 
-	if err := scanner.Err(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error reading file: %v\n", err)
-		os.Exit(1)
-	}
+	return scanner.Err()
+}
 
-	sort.Strings(results)
+func runPipeline(dir, domain string, add func(string)) error {
+	grepPattern := "." + domain
 
-	outname := fmt.Sprintf("x_%s_%s.txt", domain, time.Now().Format("2006-01-02_150405"))
-	out, err := os.Create(outname)
+	cmd := exec.Command("bash", "-c",
+		fmt.Sprintf(
+			`grep -F %q %s/*.txt | awk -F'-- ' '{print $2}' | tr ' [' $'\n''\n' | sed 's/\]//g' | grep -F %q | sort -u`,
+			grepPattern, dir, grepPattern,
+		),
+	)
+
+	out, err := cmd.Output()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error creating output: %v\n", err)
-		os.Exit(1)
+		if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 1 {
+			return nil // grep found nothing — not an error
+		}
+		return fmt.Errorf("pipeline failed: %w", err)
 	}
-	defer out.Close()
 
-	w := bufio.NewWriter(out)
-	for _, r := range results {
-		fmt.Fprintln(w, r)
+	scanner := bufio.NewScanner(strings.NewReader(string(out)))
+	for scanner.Scan() {
+		line := cleanSNI(strings.TrimSpace(scanner.Text()))
+		if line != "" && strings.Contains(line, domain) {
+			add(line)
+		}
 	}
-	w.Flush()
 
-	fmt.Printf("Extracted %d unique domains -> %s\n", len(results), outname)
+	return scanner.Err()
 }
 
 func cleanSNI(sni string) string {
