@@ -48,23 +48,20 @@ func main() {
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		line := scanner.Text()
+
 		if !strings.Contains(line, domain) {
 			continue
 		}
 
-		parts := strings.Split(line, "][")
-		if len(parts) < 2 {
+		start := strings.Index(line, "[")
+		end := strings.LastIndex(line, "]")
+		if start == -1 || end == -1 || end <= start {
 			continue
 		}
 
-		content := parts[0]
-		if idx := strings.LastIndex(content, "["); idx != -1 {
-			content = content[idx+1:]
-		}
-
-		snis := strings.Fields(content)
+		snis := strings.Fields(line[start+1 : end])
 		for _, sni := range snis {
-			sni = strings.TrimLeft(sni, "*.")
+			sni = cleanSNI(sni)
 			if sni == "" || !strings.Contains(sni, domain) {
 				continue
 			}
@@ -97,4 +94,16 @@ func main() {
 	w.Flush()
 
 	fmt.Printf("Extracted %d unique domains -> %s\n", len(results), outname)
+}
+
+func cleanSNI(sni string) string {
+	if strings.HasPrefix(sni, "*.") {
+		sni = sni[2:]
+	} else if strings.HasPrefix(sni, "*") {
+		sni = sni[1:]
+	}
+
+	sni = strings.TrimLeft(sni, ".")
+
+	return strings.ToLower(sni)
 }
