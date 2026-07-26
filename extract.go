@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-const defaultInput = "/root/kaeferyeager/sni-ip-sync/final.txt"
+const defaultInput = "./final.txt"
 
 func main() {
 	if len(os.Args) < 2 {
