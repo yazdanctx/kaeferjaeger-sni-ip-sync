@@ -21,17 +21,11 @@ mkdir -p "$OUTPUT_DIR"
 
 OUTPUT_FILE="$OUTPUT_DIR/results_${TIMESTAMP}.txt"
 
-(grep -F ".$DOMAIN" "$INPUT" \
+grep -F ".$DOMAIN" "$INPUT" \
   | awk -F'-- ' '{print $2}' \
   | tr ' [' '\n\n' \
   | sed 's/\]//g' \
-  | grep -F ".$DOMAIN"
-
-grep '\*' "$INPUT" \
-  | awk -F'-- ' '{print $2}' \
-  | tr ' []' '\n\n' \
-  | sed 's/\]//g' \
-  | grep -v '^$') \
+  | grep -F ".$DOMAIN" \
   | sort -u > "$OUTPUT_FILE"
 
 echo "Extracted to $OUTPUT_FILE"
