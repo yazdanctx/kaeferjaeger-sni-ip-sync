@@ -9,7 +9,7 @@ fi
 
 DOMAIN="$1"
 INPUT="final.txt"
-OUTPUT_DIR="output"
+OUTPUT_DIR="output/${DOMAIN//\./_}"
 TIMESTAMP=$(date +%s%3N)
 
 if [ ! -f "$INPUT" ]; then
@@ -19,7 +19,7 @@ fi
 
 mkdir -p "$OUTPUT_DIR"
 
-OUTPUT_FILE="$OUTPUT_DIR/${DOMAIN//\./_}_${TIMESTAMP}.txt"
+OUTPUT_FILE="$OUTPUT_DIR/results_${TIMESTAMP}.txt"
 
 grep -F ".$DOMAIN" "$INPUT" \
   | awk -F'-- ' '{print $2}' \
