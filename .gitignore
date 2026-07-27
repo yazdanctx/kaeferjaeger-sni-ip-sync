@@ -1,5 +1,4 @@
 data/
 final.txt
 sni-ip-sync
-extract
-x_*.txt
+output/

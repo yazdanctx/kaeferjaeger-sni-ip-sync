@@ -26,16 +26,9 @@ cd /root
 git clone https://github.com/YOUR_USERNAME/kaeferyeager-sni-ip-sync.git
 cd sni-ip-sync
 go build -o sni-ip-sync sync.go
-go build -o extract extract.go
 ```
 
-### 3. Test manually
-
-```bash
-./sni-ip-sync
-```
-
-### 4. Set up cron
+### 3. Set up cron
 
 ```bash
 crontab -e
@@ -46,37 +39,40 @@ Add this line to run daily at 3:00 AM:
 ```bash
 0 3 * * * cd /root/kaeferyeager/sni-ip-sync && ./sni-ip-sync >> /var/log/sni-ip-sync.log 2>&1
 ```
-### 5. Verify cron is running
+
+### 4. Verify cron is running
 
 ```bash
 crontab -l
 ```
 
-## Manual run
+## Usage
+
+### Sync (download and merge data)
 
 ```bash
-cd /root/kaeferyeager/sni-ip-sync
 ./sni-ip-sync
 ```
 
-## Extract domains
+This must be run first to generate `final.txt` before extracting.
 
-The `extract` tool pulls unique subdomains for a given domain from `final.txt`.
-
-### Usage
+### Extract subdomains for a domain
 
 ```bash
-# Extract domains for a specific domain (reads from default path)
-./extract example.com
-
-# Extract with custom input file
-./extract -f /path/to/final.txt example.com
+./extract.sh dell.com
 ```
 
-### Output
+This reads `final.txt`, finds all entries matching `.dell.com`, extracts the unique subdomains, and writes them to `output/dell_com_<timestamp_ms>.txt`.
 
-Files are saved in the current directory with the format:
+### Full workflow
 
-```
-x_example.com_2026-07-26_143052.txt
+```bash
+# 1. Sync the latest data
+./sni-ip-sync
+
+# 2. Extract subdomains for a domain
+./extract.sh dell.com
+
+# 3. Check the output
+cat output/dell_com_*.txt
 ```
