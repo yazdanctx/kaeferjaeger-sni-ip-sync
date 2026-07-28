@@ -23,7 +23,7 @@ source ~/.profile
 
 ```bash
 cd /root
-git clone https://github.com/YOUR_USERNAME/kaeferyeager-sni-ip-sync.git
+git clone https://github.com/YOUR_USERNAME/kaeferjaeger-sni-ip-sync.git
 cd sni-ip-sync
 go build -o sni-ip-sync sync.go
 ```
@@ -37,7 +37,7 @@ crontab -e
 Add this line to run daily at 3:00 AM:
 
 ```bash
-0 3 * * * cd /root/kaeferyeager/sni-ip-sync && ./sni-ip-sync >> /var/log/sni-ip-sync.log 2>&1
+0 3 * * * cd /root/kaeferjaeger/sni-ip-sync && ./sni-ip-sync >> /var/log/sni-ip-sync.log 2>&1
 ```
 
 ### 4. Verify cron is running
